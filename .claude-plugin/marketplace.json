@@ -1,0 +1,24 @@
+{
+  "name": "prompt-architect",
+  "owner": {
+    "name": "YOUR_GITHUB_HANDLE"
+  },
+  "plugins": [
+    {
+      "name": "prompt-architect",
+      "source": "./skills/prompt-architect",
+      "version": "1.0.0",
+      "description": "Engineer prompts using the REASONS Canvas — Requirements, Entities, Approach, Structure, Operations, Norms, Safeguards. Based on Thoughtworks' Structured Prompt-Driven Development methodology and GenAI patterns from martinfowler.com.",
+      "category": "ai-and-agent-building",
+      "keywords": [
+        "prompt-engineering",
+        "spdd",
+        "reasons-canvas",
+        "meta-prompting",
+        "prompt-design",
+        "thoughtworks",
+        "martin-fowler"
+      ]
+    }
+  ]
+}
