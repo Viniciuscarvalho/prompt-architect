@@ -32,6 +32,13 @@ claude plugin marketplace add YOUR_GITHUB_HANDLE/prompt-architect
 claude plugin install prompt-architect@prompt-architect
 ```
 
+**Updating to a new version:**
+
+```bash
+claude plugin marketplace update prompt-architect
+claude plugin install prompt-architect@prompt-architect
+```
+
 ### Claude.ai (web/desktop app)
 
 1. Settings → Capabilities → enable **Code Execution and File Creation**.
@@ -39,15 +46,68 @@ claude plugin install prompt-architect@prompt-architect
 
 The ZIP must contain the `prompt-architect/` folder at the root, not the loose `SKILL.md`.
 
-### Other LLMs (ChatGPT, Gemini, Cursor, raw API)
+**Updating:** delete the existing skill entry, then re-upload a fresh ZIP of the updated `skills/prompt-architect/` folder.
 
-Copy the contents of `skills/prompt-architect/SKILL.md` (everything below the YAML frontmatter) into the system prompt or custom instructions field. You lose auto-triggering, but the canvas itself does the work.
+### File-based agent CLIs (Codex, Cursor 2.2+)
+
+These tools read instructions from a file in your repo rather than a system-prompt field. Use the pointer pattern — a short trigger note that tells the model where to find the full skill — so the entire SKILL.md body isn't loaded into every session.
+
+1. Copy `skills/prompt-architect/SKILL.md` into your project at a stable path, e.g. `.docs/prompt-architect.md`.
+2. Add the following trigger note to your `AGENTS.md` (create it at your repo root if it doesn't exist):
+
+```
+# prompt-architect
+When the user asks to write, create, design, draft, improve, refactor, or review an LLM prompt,
+read .docs/prompt-architect.md and follow the workflow there exactly before responding.
+```
+
+References: [Codex AGENTS.md](https://developers.openai.com/codex/guides/agents-md) · [Cursor rules](https://cursor.com/docs/rules)
+
+**Updating:** replace `.docs/prompt-architect.md` with the new `SKILL.md` contents. The trigger note in `AGENTS.md` doesn't change.
+
+### Gemini CLI
+
+Same pointer pattern as above, but Gemini CLI reads from `GEMINI.md` instead of `AGENTS.md`.
+
+1. Copy `skills/prompt-architect/SKILL.md` into your project at `.docs/prompt-architect.md`.
+2. Add the trigger note to `GEMINI.md` at your repo root (or `~/.gemini/GEMINI.md` for a global install):
+
+```
+# prompt-architect
+When the user asks to write, create, design, draft, improve, refactor, or review an LLM prompt,
+read .docs/prompt-architect.md and follow the workflow there exactly before responding.
+```
+
+Reference: [Gemini CLI context files](https://geminicli.com/docs/cli/gemini-md/)
+
+**Updating:** replace `.docs/prompt-architect.md` with the new `SKILL.md` contents.
+
+### System-prompt UIs and APIs (ChatGPT Custom GPTs, Gemini Gems, Anthropic / OpenAI / Google APIs)
+
+Copy the contents of `skills/prompt-architect/SKILL.md` (everything **below** the YAML frontmatter, starting at `# Prompt Architect`) into the system prompt or custom instructions field of your tool:
+
+| Surface                         | Where to paste                            |
+| ------------------------------- | ----------------------------------------- |
+| ChatGPT Custom GPT              | Configure → Instructions                  |
+| Gemini Gems                     | Gem instructions field                    |
+| Anthropic / OpenAI / Google API | `system` / `system_instruction` parameter |
+
+You lose auto-triggering, but the canvas itself does the work. The `Generated-by` field in every output will read `prompt-architect (vendored — version unknown, see source repo)` — check the repo for the version you copied from.
+
+**Updating:** re-paste the new `SKILL.md` body into the same field.
+
+### Watching for updates
+
+- **Watch this repo** (GitHub → Watch → Releases only) for new version notifications.
+- **Check the in-output stamp** — every artifact the skill produces includes a `Generated-by: prompt-architect vX.Y.Z` line in its Header. Compare that version against the latest tag to know if you're behind.
+- **Read [CHANGELOG.md](./CHANGELOG.md)** for a summary of what changed before updating.
 
 ---
 
 ## 30-second usage example
 
 **You ask:**
+
 > Help me write a prompt that classifies customer emails as billing, technical, or other.
 
 **The skill produces** (abbreviated):
@@ -56,12 +116,14 @@ Copy the contents of `skills/prompt-architect/SKILL.md` (everything below the YA
 # email-triage-classifier
 
 ## Header
+
 - Purpose: Classify customer emails into one of three labels with audit-ready reasoning
 - Prompt type: system+user
 - Technique: Chain-of-thought
 - Version: v1.0
 
 ## REASONS Canvas
+
 - R: Classify into one of three labels; emit reasoning then label
 - E: "billing" = charges, refunds, invoices · "technical" = product not working · "other" = everything else
 - A: CoT — hybrid cases need visible reasoning to be debuggable
@@ -71,13 +133,17 @@ Copy the contents of `skills/prompt-architect/SKILL.md` (everything below the YA
 - S: Empty/non-English → label `other` and note in reasoning. Never invent a fourth category
 
 ## The Prompt
+
 ### System
+
 [the actual prompt text, ready to copy-paste]
 
 ### User
+
 [the user template with {{placeholders}}]
 
 ## Example pass / Example fail
+
 [seed your eval set]
 ```
 
@@ -92,11 +158,14 @@ prompt-architect/
 ├── README.md                              ← this file
 ├── CHANGELOG.md                           ← version history
 ├── LICENSE                                ← Apache 2.0
+├── scripts/
+│   └── bump-version.sh                    ← release helper (updates 4 files, no auto-commit)
 ├── .claude-plugin/
-│   └── marketplace.json                   ← plugin manifest
+│   └── marketplace.json                   ← plugin manifest (canonical version source)
 └── skills/
     └── prompt-architect/
         ├── SKILL.md                       ← workflow, canvas, technique table, checklist
+        ├── VERSION                        ← bare version string, stamped into every output
         └── references/
             ├── canvas.md                  ← slot-by-slot guidance, house rules, pitfalls
             └── examples.md                ← five worked examples (one per technique)
