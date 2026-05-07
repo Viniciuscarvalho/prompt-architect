@@ -22,20 +22,20 @@ Treat every prompt as a first-class artifact: **Specified** (goal, inputs, outpu
 1. **Capture intent.** Restate in one sentence: _"You want a prompt that takes X and produces Y for audience Z, evaluated by criterion W."_ If you cannot complete that sentence, ask exactly one clarifying question. Tiebreaker priority when multiple gaps are equal-weight: ① output consumer (human vs. machine-parsed) — determines Structure; ② task complexity (single vs. multi-step) — determines Technique; ③ failure tolerance (prototype vs. production) — determines Safeguards depth.
 2. **Fill the REASONS Canvas.** Work through all seven slots. See `references/canvas.md` for slot-by-slot guidance. **Non-nullable: R, S (Structure), S (Safeguards)** — marking any of these N/A requires explicit written justification. E, A, O, N may be N/A when genuinely not applicable.
 3. **Pick the technique.** Use the table below. State the choice and a one-line justification.
-4. **Assemble the prompt.** Use the output format below exactly.
+4. **Assemble the prompt.** Use the output format below exactly. Before writing the Header, read `skills/prompt-architect/VERSION` and use its contents as the value of the `Generated-by` field. If you have no file-system access (system-prompt-paste install), write `prompt-architect (vendored — version unknown, see source repo)` instead.
 5. **Self-review.** Run the quality checklist. Apply the two-track failure protocol.
 
 ## REASONS Canvas
 
-| Slot               | Fill with                                                                         |
-| ------------------ | --------------------------------------------------------------------------------- |
+| Slot               | Fill with                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **R** Requirements | Observable outcome, audience, success criterion — no vague verbs like "help with"; multi-goal prompts number criteria as AC1/AC2/AC3 |
-| **E** Entities     | Domain vocabulary, jargon, named concepts the model must use correctly            |
-| **A** Approach     | Chosen technique + one-line justification                                         |
-| **S** Structure    | Input schema, output schema, field-level constraints                              |
-| **O** Operations   | Step-by-step task decomposition; the CoT scaffold lives here                      |
-| **N** Norms        | Tone, voice, persona, length defaults, formatting conventions                     |
-| **S** Safeguards   | Prohibitions ("Do NOT …" list) and Recovery (refusal wording, malformed-input behavior) |
+| **E** Entities     | Domain vocabulary, jargon, named concepts the model must use correctly                                                               |
+| **A** Approach     | Chosen technique + one-line justification                                                                                            |
+| **S** Structure    | Input schema, output schema, field-level constraints                                                                                 |
+| **O** Operations   | Step-by-step task decomposition; the CoT scaffold lives here                                                                         |
+| **N** Norms        | Tone, voice, persona, length defaults, formatting conventions                                                                        |
+| **S** Safeguards   | Prohibitions ("Do NOT …" list) and Recovery (refusal wording, malformed-input behavior)                                              |
 
 ## Technique selection
 
@@ -83,6 +83,7 @@ Default to zero-shot. Move up only when zero-shot fails a checklist item.
 - **Target model:** claude-sonnet-4-6 | gpt-4o | model-agnostic | ...
 - **Version:** v1.0
 - **Changelog:** v1.0 — initial
+- **Generated-by:** prompt-architect v[read from skills/prompt-architect/VERSION]
 
 ## REASONS Canvas
 
