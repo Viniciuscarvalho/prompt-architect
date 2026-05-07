@@ -5,6 +5,10 @@
 ### R — Requirements
 What outcome does this prompt need to produce? Who is the audience of the output? What does success look like in concrete, observable terms? Replace vague verbs ("help with", "improve") with verbs that have testable outputs: "classify", "extract", "summarize in N sentences", "rewrite at reading level X".
 
+When R has two or more distinct success criteria, number them as **AC1, AC2, AC3** (Acceptance Criteria). Reference them from O steps and S lines as `(AC1)` or `(AC1, AC3)` to force traceability. Single-goal prompts skip numbering.
+
+Example (multi-goal): `AC1: output is valid JSON; AC2: all input dates appear in output; AC3: no PII in output.`
+
 ### E — Entities
 The domain vocabulary the model must use correctly. List key nouns, jargon, named concepts, and any term where the wrong synonym would be a defect. This is **priming**: building shared vocabulary so the model is not guessing what your words mean.
 
@@ -28,15 +32,25 @@ For **chain-of-thought**, this section *is* the reasoning scaffold.
 For **ReAct**, this section is an action loop: Reason → Act (tool call) → Observe → repeat until done or max_iterations reached.
 For **self-critique**, this section must include three sequential phases: Draft → Critique → Revise. Skipping any phase breaks the technique.
 
+When R uses numbered ACs, annotate each O step with the AC(s) it satisfies, e.g., "Step 4 — redact PII (AC3)."
+
 ### N — Norms
 Tone, voice, persona, formatting conventions, length defaults, style choices. When a norm shows up in three or more prompts for the same project, lift it into a reusable Norms block — do not re-derive it each time (the **codified commands** pattern).
 
 ### S — Safeguards
-Failure modes and guardrails. Spell out:
-- What the prompt must **not** do (out-of-scope topics, formats to avoid, hallucination traps)
-- How the model should behave when input is malformed, empty, or adversarial
-- Refusal conditions and the exact wording of the refusal
-- Privacy, safety, or compliance constraints
+Failure modes and guardrails. Structure as two sub-blocks:
+
+**Prohibitions** — one "Do NOT" imperative per line. Imperative negation lands more reliably than soft prose.
+- Do NOT generate output before reading the full input.
+- Do NOT speculate beyond cited sources.
+- Do NOT change field names or schema structure.
+
+**Recovery** — positive imperatives for malformed input, refusals, and exact refusal wording.
+- If input is empty, respond with: `"INPUT_REQUIRED"`.
+- If asked off-topic, respond with: `"OUT_OF_SCOPE: ..."`.
+- If a required field is missing, halt and request it before proceeding.
+
+Include at least one Prohibition and one Recovery line. Privacy, safety, and compliance constraints belong in Prohibitions.
 
 A prompt without explicit Safeguards is a prompt waiting to fail in production.
 
@@ -67,12 +81,28 @@ When reviewing an existing prompt, watch for these root causes of bad output:
 
 ## Maintenance lifecycle
 
-Ship the first draft only when the quality checklist passes. After that:
+Ship the first draft only when the quality checklist passes. After that, when the prompt misbehaves in production, follow the Canvas-First Principle: fix the slot, not the prose.
 
-- New failure observed in production → add a line to Safeguards, bump minor version, add changelog entry.
-- New domain term introduced upstream → add it to Entities, bump minor version.
-- Behavior the prompt produces three times in a row that you wish it stopped → add an explicit Norm forbidding it.
-- Breaking change to output format or technique → bump major version.
+**Issue-to-slot map:**
+
+| Failure observed                           | Slot to edit        |
+|--------------------------------------------|---------------------|
+| Wrong outcome, vague goal, untestable      | R — Requirements    |
+| Wrong/missing domain term in output        | E — Entities        |
+| Wrong technique or reasoning shape         | A — Approach        |
+| Output schema/format drift, fields missing | S — Structure       |
+| Wrong step order, missing/skipped step     | O — Operations      |
+| Wrong tone, length, persona, formatting    | N — Norms           |
+| Model did forbidden thing, refused wrong   | S — Safeguards      |
+
+**Iteration workflow:**
+
+1. **Capture.** Record failing input, actual output, expected behavior.
+2. **Classify.** Use the issue-to-slot map above to identify the slot.
+3. **Edit canvas.** Fix the identified slot — not the prompt prose.
+4. **Version.** Bump minor (additive) or major (breaking) and add a changelog entry.
+5. **Re-derive prompt.** Regenerate the `## The Prompt` block from the updated canvas.
+6. **Re-test.** Re-run Example pass and Example fail; add the captured failure as a new Example fail if it represents a recurring class.
 
 **Versioning:** major.minor only. Major = breaking output format or technique change. Minor = additive Norms, Safeguards, or Entities update.
 

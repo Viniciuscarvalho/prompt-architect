@@ -29,13 +29,13 @@ Treat every prompt as a first-class artifact: **Specified** (goal, inputs, outpu
 
 | Slot               | Fill with                                                                         |
 | ------------------ | --------------------------------------------------------------------------------- |
-| **R** Requirements | Observable outcome, audience, success criterion — no vague verbs like "help with" |
+| **R** Requirements | Observable outcome, audience, success criterion — no vague verbs like "help with"; multi-goal prompts number criteria as AC1/AC2/AC3 |
 | **E** Entities     | Domain vocabulary, jargon, named concepts the model must use correctly            |
 | **A** Approach     | Chosen technique + one-line justification                                         |
 | **S** Structure    | Input schema, output schema, field-level constraints                              |
 | **O** Operations   | Step-by-step task decomposition; the CoT scaffold lives here                      |
 | **N** Norms        | Tone, voice, persona, length defaults, formatting conventions                     |
-| **S** Safeguards   | What prompt must NOT do; malformed-input behaviour; refusal conditions            |
+| **S** Safeguards   | Prohibitions ("Do NOT …" list) and Recovery (refusal wording, malformed-input behavior) |
 
 ## Technique selection
 
@@ -65,6 +65,7 @@ Default to zero-shot. Move up only when zero-shot fails a checklist item.
 - [ ] **Vocabulary is primed.** Every domain term is in Entities or universally understood. If not → user-input-required.
 - [ ] **Technique fits the task.** Approach slot has a one-line justification matching the table. If not → self-correctable.
 - [ ] **Failure modes named.** Safeguards lists at least one out-of-scope and one malformed-input case. If not → self-correctable.
+- [ ] **AC traceability.** If R lists numbered ACs, each AC is referenced by at least one O step or S line. If not → self-correctable.
 - [ ] **Length is honest.** No single canvas slot exceeds 150 words (→ decompose into sub-prompt). Norms has ≤7 rules (→ model trades them off beyond that). Operations has ≤6 steps (→ use CoT or prompt chaining). If violated → self-correctable.
 - [ ] **Adversarial sanity check.** Off-topic input, prompt-injection, empty string — degrades gracefully? If not → self-correctable.
 
@@ -85,7 +86,15 @@ Default to zero-shot. Move up only when zero-shot fails a checklist item.
 
 ## REASONS Canvas
 
-- **R:** ... **E:** ... **A:** ... **S (Structure):** ... **O:** ... **N:** ... **S (Safeguards):** ...
+- **R:** … (or AC1: …; AC2: …; AC3: … for multi-goal prompts)
+- **E:** …
+- **A:** …
+- **S (Structure):** …
+- **O:** …
+- **N:** …
+- **S (Safeguards):**
+  - Prohibitions: Do NOT …
+  - Recovery: If … → …
 
 ## The Prompt
 
@@ -126,7 +135,11 @@ prompts/
 
 1. **Store the whole document, paste only the prompt block.** The canvas, header, and examples are the engineering record. The `## The Prompt` block is the deployable unit. Keep them together in version control; only the prompt block goes into your LLM tool, API call, or system-prompt field.
 
-2. **When the prompt misbehaves, edit the canvas first, then re-derive the prompt block.** A failure in production is almost always a gap in Requirements or Safeguards — not a wording problem in the prompt prose. Find the failing canvas slot, fix it, then regenerate the prompt block from the updated canvas. Editing the prompt block directly without updating the canvas disconnects design from implementation and the artifact loses its engineering record.
+2. **The Canvas-First Principle.**
+
+   > When the output misbehaves, fix the canvas first — then re-derive the prompt.
+
+   A failure in production is almost always a gap in a canvas slot, not a wording problem in the prompt prose. Find the failing slot using the issue-to-slot map in `references/canvas.md`, fix it, then regenerate the prompt block from the updated canvas. Editing the prompt block directly without updating the canvas disconnects design from implementation and the artifact loses its engineering record.
 
 ## References
 

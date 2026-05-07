@@ -7,7 +7,7 @@
     {
       "name": "prompt-architect",
       "source": "./skills/prompt-architect",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "description": "Engineer prompts using the REASONS Canvas — Requirements, Entities, Approach, Structure, Operations, Norms, Safeguards. Based on Thoughtworks' Structured Prompt-Driven Development methodology and GenAI patterns from martinfowler.com.",
       "category": "ai-and-agent-building",
       "keywords": [

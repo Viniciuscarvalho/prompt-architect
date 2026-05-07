@@ -19,7 +19,7 @@ This skill enforces a workflow that turns prompts into engineering artifacts:
 4. Assemble the prompt in a fixed output format.
 5. Self-review against a quality checklist.
 
-The canvas is the design; the prompt block is the compiled output. When a prompt misbehaves, you edit the canvas first, then re-derive the prompt.
+The canvas is the design; the prompt block is the compiled output. The **Canvas-First Principle**: when the output misbehaves, fix the canvas first — then re-derive the prompt.
 
 ---
 
@@ -90,6 +90,7 @@ You copy the `## The Prompt` block into your tool. You keep the rest as the engi
 ```
 prompt-architect/
 ├── README.md                              ← this file
+├── CHANGELOG.md                           ← version history
 ├── LICENSE                                ← Apache 2.0
 ├── .claude-plugin/
 │   └── marketplace.json                   ← plugin manifest
@@ -123,6 +124,14 @@ Major.minor only.
 - **Minor** bump = additive Norms, Safeguards, or Entities updates; new worked examples; new technique row.
 
 See `skills/prompt-architect/references/canvas.md` for the maintenance lifecycle in full.
+
+### What's new in v1.1.0
+
+- **Canvas-First Principle named** — the existing canvas-first rule is now a named principle in `SKILL.md` so it can be referenced and followed by name.
+- **Acceptance Criteria convention** — multi-goal Requirements use `AC1/AC2/AC3` numbering, cross-referenced from Operations and Safeguards; a new quality checklist gate enforces traceability.
+- **Issue-to-slot map + iteration workflow** — `references/canvas.md` now ships a 7-row table mapping each failure shape to the canvas slot to fix, plus a 6-step Capture → Classify → Edit → Version → Re-derive → Re-test loop.
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full change log.
 
 ---
 

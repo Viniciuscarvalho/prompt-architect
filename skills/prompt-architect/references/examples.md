@@ -45,7 +45,7 @@ Five compressed canvas examples — one per primary technique. Each highlights t
 **Key structural difference:** Operations is an action *loop*, not a linear sequence. Structure must define tool schemas, not just output format.
 
 **Canvas:**
-- R: Given a research question, produce a 3-bullet summary with inline source citations; halt after max 5 tool-call iterations.
+- R: AC1: produce a 3-bullet summary; AC2: each bullet has an inline source citation; AC3: halt after max 5 tool-call iterations.
 - E: "research question" = user query; "observation" = raw tool result; "iteration" = one reason-act-observe cycle.
 - A: ReAct — model must reason and call tools iteratively; output is an action sequence, not a reasoning trace.
 - S (★ structurally distinctive):
@@ -53,13 +53,15 @@ Five compressed canvas examples — one per primary technique. Each highlights t
   - Tools: `search(query: str) → list[{title, url, snippet}]` · `fetch(url: str) → str`
   - Output = `{"summary": str (3 bullets, each ≤40 words), "sources": list[url]}`
 - O (★ structurally distinctive — action loop):
-  1. Reason: what information is still missing?
+  1. Reason: what information is still missing? (AC1)
   2. Act: call `search` or `fetch` with a specific query.
   3. Observe: read the tool result.
   4. Update understanding.
-  5. If answer is sufficient → emit final output. Else → repeat from step 1 (max 5 iterations).
-- N: Cite sources inline with the bullet they support. Prefer primary sources over aggregators. Never fabricate a URL.
-- S: If no relevant results after 3 iterations, surface what was found and note the gap. Never invent facts. If the question is ambiguous, ask one clarifying question before starting the loop.
+  5. If answer is sufficient → emit final output with inline citations (AC2). Else → repeat from step 1 (max 5 iterations, AC3).
+- N: Cite sources inline with the bullet they support. Prefer primary sources over aggregators.
+- S:
+  - Prohibitions: Do NOT fabricate URLs; Do NOT exceed 5 iterations (AC3).
+  - Recovery: If no relevant results after 3 iterations, surface what was found and note the gap (AC1). If the question is ambiguous, ask one clarifying question before starting the loop.
 
 **Technique justification:** ReAct because the agent must decide *which* tool to call and *when* to stop — that decision loop cannot be unrolled into static CoT steps.
 
@@ -72,16 +74,18 @@ Five compressed canvas examples — one per primary technique. Each highlights t
 **Key structural difference:** Structure slot defines the *interface contract* between steps — the output schema of Step 1 is the input schema of Step 2. Interface compatibility is the primary design constraint.
 
 **Step 1 — Claim extraction canvas:**
-- R: Extract all factual claims from a document as a structured list; each claim must be independently verifiable.
+- R: AC1: extract all factual claims as a structured list; AC2: each claim is independently verifiable; AC3: claim text is verbatim or close paraphrase.
 - E: "claim" = an assertable proposition that can be true or false; excludes opinions, recommendations, and predictions.
 - A: Zero-shot — extraction of factual claims is well-understood.
 - S (★ interface contract):
   - Input = `{document: str}`
   - Output = `{"claims": [{"id": int, "text": str, "location": str}]}`
   - *Step 2 receives this exact JSON as its input — any schema drift breaks the pipeline.*
-- O: 1) Read document, 2) identify assertions presented as facts, 3) exclude opinions/recommendations, 4) emit JSON.
-- N: Claim text is verbatim or close paraphrase. No editorial commentary.
-- S: If document has no factual claims, return `{"claims": []}`. Never add claims not present in the document.
+- O: 1) Read document (AC1); 2) identify assertions presented as facts (AC2); 3) exclude opinions/recommendations; 4) emit claim text verbatim or close paraphrase (AC3); 5) emit JSON.
+- N: No editorial commentary.
+- S:
+  - Prohibitions: Do NOT add claims not present in the document (AC1); Do NOT include opinions, recommendations, or predictions (AC2).
+  - Recovery: If document has no factual claims, return `{"claims": []}`.
 
 **Step 2 — Fact-check canvas (receives Step 1 output):**
 - R: For each claim in the input list, return a verdict and a one-sentence rationale.
@@ -105,15 +109,17 @@ Five compressed canvas examples — one per primary technique. Each highlights t
 **Key structural difference:** Operations slot has a mandatory draft → critique → revise cycle. All three phases are non-negotiable — the final output is the *revised* version only.
 
 **Canvas:**
-- R: Draft a rejection email that is warm, specific to the role, and under 150 words; output the final version only.
+- R: AC1: email is warm and specific to the role; AC2: under 150 words; AC3: no false hope; AC4: no legally sensitive language.
 - E: "warm" = empathetic without false hope; "specific" = references the role applied for; "false hope" = language implying future reconsideration when none is intended.
 - A: Self-critique — high-stakes communication where first drafts regularly carry tone problems or inadvertent promises.
-- S: Input = `{role: str, applicant_name: str, reason_hint: str (optional)}`. Output = email body only, no subject line, <150 words.
+- S: Input = `{role: str, applicant_name: str, reason_hint: str (optional)}`. Output = email body only, no subject line.
 - O (★ three mandatory phases):
   1. **Draft:** write the rejection email without self-censoring.
-  2. **Critique:** check for (a) false hope signals ("we'll keep your resume on file" unless instructed), (b) word count ≤150, (c) warmth-clarity balance — is the "no" unambiguous?, (d) any legally sensitive language (age, appearance, protected characteristics).
+  2. **Critique:** check for (a) false hope signals — AC3; (b) word count ≤150 — AC2; (c) warmth-clarity balance, is the "no" unambiguous? — AC1; (d) legally sensitive language (age, appearance, protected characteristics) — AC4.
   3. **Revise:** apply all critique findings. Emit the revised version only — do not show the draft or critique.
-- N: Address applicant by first name. No corporate jargon. Never promise future consideration unless the caller explicitly provides `keep_on_file: true`.
-- S: If `reason_hint` is absent, keep reason vague but genuine. If `applicant_name` is missing, halt and request it before drafting. If critique finds legally sensitive language, remove it without flagging to the user — just fix it.
+- N: Address applicant by first name. No corporate jargon.
+- S:
+  - Prohibitions: Do NOT promise future consideration unless `keep_on_file: true` is provided (AC3); Do NOT include legally sensitive language (age, appearance, protected characteristics) (AC4).
+  - Recovery: If `reason_hint` is absent, keep reason vague but genuine. If `applicant_name` is missing, halt and request it before drafting (AC1).
 
 **Technique justification:** self-critique because first-draft rejection emails reliably fail on either warmth (too cold) or clarity (too much false hope) — a structured internal review loop catches both before delivery.
